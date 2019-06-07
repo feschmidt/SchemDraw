@@ -1,12 +1,60 @@
 """
-This file contains custom elements defined by Adriaan Rol
+This file contains custom elements defined by Adriaan Rol and Felix Schmidt
 The intention is that these get merged into SchemDraw.elements after cleaning
 up so as to merge them into the master of CDelker
 """
 import numpy as np
 import SchemDraw.elements as e
 
+# TODO: SQUID
+# TODO: BIAS_TEE
+# TODO: PI_FILTER
 
+_gap = [np.nan, np.nan]
+
+# Transmission line
+_tl_r = .5
+tllength = 6
+x0 = 0.5+_tl_r
+TL = {
+    'name': 'TL',
+    'paths': [[[0, 0], [x0, 0], _gap, [x0, _tl_r], [tllength-x0-_tl_r, _tl_r], _gap, [x0, -_tl_r], [tllength-x0-_tl_r, -_tl_r], _gap, [tllength-x0-0.25*_tl_r, 0], [tllength-0.5, 0]]],
+    'shapes': [
+        {'shape': 'arc',
+         'center': [x0, 0],
+         'theta1': 90,
+         'theta2': 270,
+         'width': 1.25*_tl_r,
+         'height': 2*_tl_r},
+        {'shape': 'arc',
+         'center': [x0, 0],
+         'theta1': -90,
+         'theta2': 90,
+         'width': 1.25*_tl_r,
+         'height': 2*_tl_r},
+        {'shape': 'arc',
+         'center': [tllength-x0-.5, 0],
+         'theta1': -90,
+         'theta2': 90,
+         'width': 1.25*_tl_r,
+         'height': 2*_tl_r}
+    ],
+    'extend': False
+}
+
+# Josephson junction with gate electrode
+jjgh = 0.25
+jjgc = 0.4
+JJG = {
+    'name': 'JJG',
+    'base': e.JJ,
+    'paths': [[[-jjgc, -2*jjgh], [jjgc, -2*jjgh]],
+              [[0, -2*jjgh], [0, -4*jjgh]]],
+    'lblloc': 'bot',
+    'anchors': {'gate': [0, jjgh*-4]}
+}
+
+# Low pass filter
 LOW_PASS = {
     'name': 'LOW_PASS',
     'base': e.RBOX,
@@ -50,37 +98,32 @@ DIR_COUP = {
                 'theta1':0, 'theta2':90,
                 'width':1, 'height':1,  # 'angle':0,
                 },
-               {'shape': 'poly',
-                'xy': [[dircoup_w*.333-dx, -dircoup_h-dy],
-                       [dircoup_w*.333+dx, -dircoup_h-dy],
-                       [dircoup_w*.333+dx, -dircoup_h+dy],
-                       [dircoup_w*.333-dx, -dircoup_h+dy]],
+               {'shape': 'circle',
+                'center': [dircoup_w*.333, -dircoup_h],
+                'radius':dx,
                 'fill': True,
                 'fillcolor':'black'
                 },
-               {'shape': 'poly',
-                'xy': [[dircoup_w*.666-dx, -dircoup_h-dy],
-                       [dircoup_w*.666+dx, -dircoup_h-dy],
-                       [dircoup_w*.666+dx, -dircoup_h+dy],
-                       [dircoup_w*.666-dx, -dircoup_h+dy]],
+               {'shape': 'circle',
+                'center': [dircoup_w*.666, -dircoup_h],
+                'radius':dx,
                 'fill': True,
                 'fillcolor':'black'
                 },
-               {'shape': 'poly',
-                'xy': [[0-dx, h_offset-dy], [0+dx, h_offset-dy],
-                       [0+dx, h_offset+dy], [0-dx, h_offset+dy]],
+               {'shape': 'circle',
+                'center': [0, 0],
+                'radius':dx,
                 'fill': True,
                 'fillcolor':'black'
                 },
-               {'shape': 'poly',
-                'xy': [[dircoup_w-dx, h_offset-dy],
-                       [dircoup_w+dx, h_offset-dy],
-                       [dircoup_w+dx, h_offset+dy],
-                       [dircoup_w-dx, h_offset+dy]],
+               {'shape': 'circle',
+                'center': [dircoup_w, h_offset],
+                'radius':dx,
                 'fill': True,
                 'fillcolor':'black'
                 },
-               ]
+               ],
+    'anchors': {'port3': [dircoup_w*.333, -dircoup_h], 'port4': [dircoup_w*.666, -dircoup_h]}
 }
 
 
@@ -97,10 +140,19 @@ IQMIXER = {
                ]]
 }
 
+# Isolator
 h = .65
-CIRCULATOR = {
-    'name': 'CIRCULATOR',
+ISOLATOR = {
+    'name': 'ISOLATOR',
     'base': e.SOURCE,
     'shapes': [{'shape': 'arc', 'center': [.5, 0],
                 'width':h, 'height':h, 'theta1':130, 'theta2':320, 'arrow':'ccw'}],  # 'arrow':'cw'}
+}
+
+CIRCULATOR = {
+    'name': 'CIRCULATOR',
+    'base': ISOLATOR,
+    'paths': [[[0.5, .5], [0.5, 1],
+               ]],
+    'anchors': {'port3': [0.5, 1]}
 }

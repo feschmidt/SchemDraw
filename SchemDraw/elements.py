@@ -1481,36 +1481,3 @@ def mux(inputs=None, outputs=None, ctrls=None, topctrls=None,
     return blackbox(w, h, linputs=linputs, rinputs=rinputs,
                     binputs=binputs, tinputs=tinputs,
                     hslant=slope, **kwargs)
-
-########################################
-# Manually added by Felix Schmidt (github.com/feschmidt)
-
-
-# Transmission line
-_tl_r = .5
-tllength = 6
-x0 = 0.5+_tl_r
-TL = {
-    'name': 'TL',
-    'paths': [[[0, 0], [x0, 0], _gap, [x0, _tl_r], [tllength-x0-_tl_r, _tl_r], _gap, [x0, -_tl_r], [tllength-x0-_tl_r, -_tl_r], _gap, [tllength-x0, 0], [tllength-0.5, 0]]],
-    'shapes': [{'shape': 'circle',
-                'center': [x0, 0],
-                'radius': _tl_r},
-               {'shape': 'arc',
-                'center': [tllength-x0-.5, 0],
-                'theta1': -90,
-                'theta2': 90,
-                'width': 2*_tl_r,
-                'height': 2*_tl_r}],
-    'extend':False
-}
-
-# Josephson junction with gate electrode
-JJG = {
-    'name': 'JJG',
-    'base': JJ,
-    'paths': [[[-_rc, -2*_rh], [_rc, -2*_rh]],
-              [[0, -2*_rh], [0, -4*_rh]]],
-    'lblloc': 'bot',
-    'anchors': {'gate': [0, _rh*-4]}
-}
