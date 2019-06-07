@@ -147,12 +147,13 @@ POT = {
      }
 
 _cap_gap = 0.18
+_rc = 0.4
 CAP = {   # Straight capacitor
     'name': 'CAP',
-    'paths': [[[0, 0], _gap, [0, _rh], [0, -_rh], _gap,
-               [_cap_gap, _rh], [_cap_gap, -_rh], _gap,
+    'paths': [[[0, 0], _gap, [0, _rc], [0, -_rc], _gap,
+               [_cap_gap, _rc], [_cap_gap, -_rc], _gap,
                [_cap_gap, 0]]],
-    'anchors': {'center': [_rh, 0]}
+    'anchors': {'center': [_rc, 0]}
     }
 
 CAP_P = {   # Polarized
@@ -167,9 +168,9 @@ CAP2 = {  # Curved capacitor
     'paths': [[[0, 0], _gap, [0, _rh], [0, -_rh], _gap, [_cap_gap, 0]]],
     'shapes': [{'shape': 'arc',
                 'center': [(_cap_gap*1.5), 0],
-                'theta1': 120,
-                'theta2': -120,
-                'width': _cap_gap,
+                'theta1': 105,
+                'theta2': -105,
+                'width': _cap_gap*1.5,
                 'height': _rh*2.5}],
     'anchors': {'center': [_rh, 0]}
     }
@@ -178,6 +179,16 @@ CAP2_P = {   # Polarized
     'name': 'CAP2_P',
     'base': CAP2,
     'labels': [{'label': '+', 'pos': [-_cap_gap*1.2, _cap_gap]}]
+    }
+
+CAP_VAR = {  # Variable cap
+    'name': 'CAP_VAR',
+    'base': CAP,
+    'shapes': [{'shape': 'arrow',
+                'start': [-2*_rw, -_rh],
+                'end': [3*_rw, _rw*2],
+                'headwidth': .12,
+                'headlength': .2}],                
     }
 
 _cap_gap = 0.2
@@ -201,7 +212,8 @@ DIODE = {
 
 DIODE_F = {
     'name': 'DIODE_F',
-    'base': DIODE,
+    'paths': [[[0, 0], _gap, [_rh*1.4, _rh], [_rh*1.4, -_rh], _gap, [_rh*1.4, 0]]],
+    'anchors': {'center': [_rh, 0]},
     'shapes': [{'shape': 'poly',
                 'xy': _np.array([[0, _rh], [_rh*1.4, 0], [0, -_rh]]),
                 'fill': True}]
@@ -221,6 +233,21 @@ SCHOTTKY_F = {
     'paths': [[[_rh*1.4, _rh], [_rh*1.4-_sd, _rh],  [_rh*1.4-_sd, _rh-_sd]],
               [[_rh*1.4, -_rh], [_rh*1.4+_sd, -_rh], [_rh*1.4+_sd, -_rh+_sd]]]
     }
+
+DIODE_TUNNEL = {
+    'name': 'DIODE_TUNNEL',
+    'base': DIODE,
+    'paths': [[[_rh*1.4, _rh], [_rh*1.4-_sd, _rh]],
+              [[_rh*1.4, -_rh], [_rh*1.4-_sd, -_rh]]]
+    }
+
+DIODE_TUNNEL_F = {
+    'name': 'DIODE_TUNNEL_F',
+    'base': DIODE_F,
+    'paths': [[[_rh*1.4, _rh], [_rh*1.4-_sd, _rh]],
+              [[_rh*1.4, -_rh], [_rh*1.4-_sd, -_rh]]]
+    }
+
 
 ZENER = {  # Zener diode
     'name': 'ZENER',
@@ -314,6 +341,57 @@ PHOTODIODE = {
                  }]
     }
 
+DIAC = {
+    'name': 'DIAC',
+    'paths': [[[0, 0], _gap, [_rh*1.4, _rh*1.8], [_rh*1.4, -_rh*1.8], _gap,
+               [0, _rh*1.8], [0, -_rh*1.8], _gap, [_rh*1.4, 0]]],
+    'shapes': [{'shape': 'poly',
+                'xy': _np.array([[0, -_rh-.25], [_rh*1.4, -.25], [0, -_rh+.25]]),
+                'fill': False},
+              {'shape': 'poly',
+                'xy': _np.array([[_rh*1.4, _rh+.25], [0, .25], [_rh*1.4, _rh-.25]]),
+                'fill': False}]
+    }
+
+DIAC_F = {
+    'name': 'DIAC_F',
+    'paths': [[[0, 0], _gap, [_rh*1.4, _rh*1.8], [_rh*1.4, -_rh*1.8], _gap,
+               [0, _rh*1.8], [0, -_rh*1.8], _gap, [_rh*1.4, 0]]],
+    'shapes': [{'shape': 'poly',
+                'xy': _np.array([[0, -_rh-.25], [_rh*1.4, -.25], [0, -_rh+.25]]),
+                'fill': True},
+              {'shape': 'poly',
+                'xy': _np.array([[_rh*1.4, _rh+.25], [0, .25], [_rh*1.4, _rh-.25]]),
+                'fill': True}]
+    }
+
+TRIAC = {
+    'name': 'TRIAC',
+    'base': DIAC,
+    'paths': [[[_rh*1.4, .25], [_rh*1.4+.5, .5]]],
+    'anchors': {'gate': [_rh*1.4+.5, .5]}
+    }
+
+TRIAC_F = {
+    'name': 'TRIAC_F',
+    'base': DIAC_F,
+    'paths': [[[_rh*1.4, .25], [_rh*1.4+.5, .5]]],
+    'anchors': {'gate': [_rh*1.4+.5, .5]}
+    }
+
+SCR = {
+    'name': 'SCR',
+    'base': DIODE,
+    'paths': [[[_rh*1.4, 0], [_rh*1.4+.3, -.3], [_rh*1.4+.3, -.5]]],
+    'anchors': {'gate': [_rh*1.4+.3, -.5]}
+    }
+
+SCR_F = {
+    'name': 'SCR_F',
+    'base': DIODE_F,
+    'paths': [[[_rh*1.4, 0], [_rh*1.4+.3, -.3], [_rh*1.4+.3, -.5]]],
+    'anchors': {'gate': [_rh*1.4+.3, -.5]}
+    }
 
 _mr = 0.2
 MEMRISTOR = {
@@ -337,9 +415,29 @@ MEMRISTOR2 = {
              ],
     }
 
-JJ = {   # Josphson Junction
+JJ = {   # Josephson Junction
     'name': 'JJ',
     'paths': [[[0, 0], _gap, [-_rh, _rh], [_rh, -_rh], _gap, [_rh, _rh], [-_rh, -_rh], _gap, [0, 0]]],
+    }
+
+_fuser = .15
+_fusex = _np.linspace(_fuser*2, 1+_fuser)
+_fusey = _np.sin(_np.linspace(0, 1)*2*_np.pi) * _rh
+FUSE = {
+    'name': 'FUSE',
+    'paths': [_np.transpose(_np.vstack((_fusex, _fusey))),
+              [[0, 0], _gap, [1+_fuser*3, 0]]
+             ],
+    'shapes': [{'shape': 'circle',
+                'center': [_fuser, 0],
+                'radius': _fuser,
+                'fill': True,
+                'fillcolor': 'white'},
+              {'shape': 'circle',
+                'center': [_fuser*2+1, 0],
+                'radius': _fuser,
+                'fill': True,
+                'fillcolor': 'white'}],
     }
 
 # Connection dots, lines
@@ -368,6 +466,15 @@ DOT = {
     'extend': False,
     }
 
+ARROWHEAD = {
+    'name': 'ARROWHEAD',
+    'shapes': [{'shape': 'arrow', 'start': [-.3, 0], 'end': [0, 0],
+                'headwidth': .3, 'headlength': .3}],
+    'lblofst': .25,
+    'move_cur': False,
+    'extend': False
+    }
+
 ELLIPSIS = {
     'name': 'ELLIPSIS',
     'shapes': [{'shape': 'circle',
@@ -388,7 +495,6 @@ ELLIPSIS = {
     'extend': False,
     'drop': [2, 0]
     }
-
 
 LINE = {'name': 'LINE', 'paths': [_np.array([[0, 0]])]}
 
@@ -448,7 +554,19 @@ GND_CHASSIS = {
     'extend': False,
     'theta': 0
     }
-    
+
+# antenna
+_ant_lead = 0.6
+_ant_h = 0.6
+_ant_w = 0.38
+ANT = {
+    'name': 'ANT',
+    'paths': [[[0, 0], [0, _ant_lead], [-_ant_w, _ant_lead+_ant_h], [_ant_w, _ant_lead+_ant_h], [0, _ant_lead]]],
+    'extend': False,
+    'move_cur': False,
+    'theta': 0
+    }
+
 _chgnd_dx = _rh*.75
 _chgnd_dy = _rh
 VSS = {
@@ -578,6 +696,59 @@ PFET4 = {
                 'gate': [_fetw+_fet_gap+_fetl+_fetr, -_fetl-_fetw/2],
                 'bulk': [0, -_fetl-_fetw/2]}
      }
+
+# Junction FETs
+_fete = _fetw*.2  # JFET extension
+_jfetw = _rw*3
+
+_JFET_BASE = {
+    'paths': [[[0, 0], [0, -_fetl], [_jfetw, -_fetl], [_jfetw, -_fetl+_fete], [_jfetw, -_fetl-_jfetw-_fete],
+               [_jfetw, -_fetl-_jfetw], [0, -_fetl-_jfetw], [0, -2*_fetl-_jfetw]],
+              [[_jfetw, -_fetl-_jfetw], [_jfetw+_fetl, -_fetl-_jfetw]]
+             ],
+    'extend': False,
+    'drop': _np.array([_jfetw+_fetl, -_fetl-_jfetw]),
+    'lblloc': 'lft',
+    'anchors': {'source': [0, -2*_fetl-_jfetw],
+                'drain': [0, 0],
+                'gate': [_jfetw+_fetl, -_fetl-_jfetw]}
+    }
+
+JFET_N = {
+    'name': 'JFET_N',
+    'base': _JFET_BASE,
+    'shapes': [{'shape': 'arrow',
+                'start': [_jfetw+.1, -_fetl-_jfetw],
+                'end': [_jfetw+.3, -_fetl-_jfetw],
+                'headwidth': .3,
+                'headlength': .2}],  
+    }
+
+JFET_N_C = {
+    'name': 'JFET_N_C',
+    'base': JFET_N,
+    'shapes': [{'shape': 'circle',
+                'center': [_jfetw/2, -_fetw],
+                'radius': _fetw*1.1}]
+    }
+
+JFET_P = {
+    'name': 'JFET_P',
+    'base': _JFET_BASE,
+    'shapes': [{'shape': 'arrow',
+                'start': [_jfetw+.25, -_fetl-_jfetw],
+                'end': [_jfetw, -_fetl-_jfetw],
+                'headwidth': .3,
+                'headlength': .25}],  
+    }
+
+JFET_P_C = {
+    'name': 'JFET_P_C',
+    'base': JFET_P,
+    'shapes': [{'shape': 'circle',
+                'center': [_jfetw/2, -_fetw],
+                'radius': _fetw*1.1}]
+    }
 
 
 # BJT transistors
@@ -712,8 +883,7 @@ SOURCE_SIN = {
 #Controlled sources
 SOURCE_CONT = {
     'name': 'SOURCE_CONT',
-    'paths': [[[0, 0], [.5, .5], [1, 0]],
-              [[0, 0], [.5, -.5], [1, 0]]],
+    'paths': [[[0, 0], [.5, .5], [1, 0], [.5, -.5], [0, 0], _gap, [1, 0]]],
     'theta': 90.,
      }
 
@@ -952,6 +1122,7 @@ SPEAKER = {
                 'closed': False}]
     }
 
+
 _a = .25
 _b = .7
 _t = _np.linspace(1.4, 3.6*_np.pi, 100)
@@ -1083,7 +1254,7 @@ def blackbox(w, h, linputs=None, rinputs=None, tinputs=None, binputs=None,
         labels, anchors are named 'inL1', 'inL2', ... 'inR1', 'inR2', 'inT1', 'inB1', etc.
     '''
     if hslant is not None and vslant is not None:
-        print('Warning - hslant and vslant both deifined. Weird pins may result.')
+        print('Warning - hslant and vslant both defined. Weird pins may result.')
 
     if hslant is None:
         hslant = 0
@@ -1310,3 +1481,36 @@ def mux(inputs=None, outputs=None, ctrls=None, topctrls=None,
     return blackbox(w, h, linputs=linputs, rinputs=rinputs,
                     binputs=binputs, tinputs=tinputs,
                     hslant=slope, **kwargs)
+
+########################################
+# Manually added by Felix Schmidt (github.com/feschmidt)
+
+
+# Transmission line
+_tl_r = .5
+tllength = 6
+x0 = 0.5+_tl_r
+TL = {
+    'name': 'TL',
+    'paths': [[[0, 0], [x0, 0], _gap, [x0, _tl_r], [tllength-x0-_tl_r, _tl_r], _gap, [x0, -_tl_r], [tllength-x0-_tl_r, -_tl_r], _gap, [tllength-x0, 0], [tllength-0.5, 0]]],
+    'shapes': [{'shape': 'circle',
+                'center': [x0, 0],
+                'radius': _tl_r},
+               {'shape': 'arc',
+                'center': [tllength-x0-.5, 0],
+                'theta1': -90,
+                'theta2': 90,
+                'width': 2*_tl_r,
+                'height': 2*_tl_r}],
+    'extend':False
+}
+
+# Josephson junction with gate electrode
+JJG = {
+    'name': 'JJG',
+    'base': JJ,
+    'paths': [[[-_rc, -2*_rh], [_rc, -2*_rh]],
+              [[0, -2*_rh], [0, -4*_rh]]],
+    'lblloc': 'bot',
+    'anchors': {'gate': [0, _rh*-4]}
+}

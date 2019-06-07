@@ -97,10 +97,10 @@ IQMIXER = {
                ]]
 }
 
-h=.65
+h = .65
 CIRCULATOR = {
-    'name'  : 'CIRCULATOR',
-    'base'  : e.SOURCE,
-    'shapes':[{'shape':'arc', 'center':[.5,0],
-             'width':h, 'height':h, 'theta1':130, 'theta2':320, 'arrow':'ccw'}],# 'arrow':'cw'}
-    }
+    'name': 'CIRCULATOR',
+    'base': e.SOURCE,
+    'shapes': [{'shape': 'arc', 'center': [.5, 0],
+                'width':h, 'height':h, 'theta1':130, 'theta2':320, 'arrow':'ccw'}],  # 'arrow':'cw'}
+}
