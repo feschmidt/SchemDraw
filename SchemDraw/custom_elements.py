@@ -8,11 +8,11 @@ import SchemDraw.elements as e
 
 # TODO: SQUID
 # TODO: BIAS_TEE
-# TODO: PI_FILTER
 
 _gap = [np.nan, np.nan]
 
 # Transmission line
+# TODO: it would be nice if it was possible to draw the inner conductor in grey, but I don't see a way to set the edgecolor of paths/poly
 _tl_r = .5
 tllength = 6
 x0 = 0.5+_tl_r
@@ -61,6 +61,13 @@ LOW_PASS = {
     'paths': [[[0.15, 0.05],
                [0.6, 0.05],
                [0.8, -.15]]]
+}
+
+# PI filter
+PI_FILTER = {
+    'name': 'PI_FILTER',
+    'base': e.RBOX,
+    'labels': [{'label': '$\pi$', 'pos': [.5, 0]}]
 }
 
 # Single port amplifier
@@ -149,6 +156,7 @@ ISOLATOR = {
                 'width':h, 'height':h, 'theta1':130, 'theta2':320, 'arrow':'ccw'}],  # 'arrow':'cw'}
 }
 
+# Circulator
 CIRCULATOR = {
     'name': 'CIRCULATOR',
     'base': ISOLATOR,
@@ -156,3 +164,5 @@ CIRCULATOR = {
                ]],
     'anchors': {'port3': [0.5, 1]}
 }
+
+# TODO: Circulator 4port
