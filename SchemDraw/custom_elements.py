@@ -7,6 +7,8 @@ import numpy as np
 import SchemDraw.elements as e
 
 # TODO: SQUID
+# TODO: SQUID with flux bias line
+# TODO: SQUID with gate voltage line
 # TODO: BIAS_TEE
 
 _gap = [np.nan, np.nan]

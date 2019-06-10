@@ -11,7 +11,6 @@ from matplotlib.patches import Arc
 import copy
 
 from . import elements
-from . import custom_elements
 
 #--------------------------------------------------------------------
 # Set up matplotlib parameters
@@ -198,12 +197,11 @@ Other:
         if len(self._state) > 0:
             self.here, self.theta = self._state.pop()
 
-    def draw(self, ax=None, showframe=False, showplot=True, autoscale=True):
+    def draw(self, ax=None, showframe=False, showplot=True):
         """ Draw the diagram.
             ax : matplotlib axis to draw to.
             showframe : Show the plot frame/axis. Useful for debugging.
             showplot : Show the plot in matplotlib window in non-interactive mode.
-            autoscale : Autoscales the view and sets axis limits
         """
 
         mpl.rcParams['font.size'] = self.fontsize
@@ -217,19 +215,18 @@ Other:
         for e in self._elm_list:
             e.draw(ax)
 
-        if autoscale:
-            ax.autoscale_view(True)  # This autoscales all the shapes too
-            # NOTE: arrows don't seem to be included in autoscale!
-            xlim = np.array(ax.get_xlim())
-            ylim = np.array(ax.get_ylim())
-            xlim[0] = xlim[0]-.1   # Add a .1 unit border to pick up lost pixels
-            ylim[0] = ylim[0]-.1
-            xlim[1] = xlim[1]+.1
-            ylim[1] = ylim[1]+.1
-            ax.set_xlim(xlim)
-            ax.set_ylim(ylim)
-            w = xlim[1]-xlim[0]
-            h = ylim[1]-ylim[0]
+        ax.autoscale_view(True)  # This autoscales all the shapes too
+        # NOTE: arrows don't seem to be included in autoscale!
+        xlim = np.array(ax.get_xlim())
+        ylim = np.array(ax.get_ylim())
+        xlim[0] = xlim[0]-.1   # Add a .1 unit border to pick up lost pixels
+        ylim[0] = ylim[0]-.1
+        xlim[1] = xlim[1]+.1
+        ylim[1] = ylim[1]+.1
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        w = xlim[1]-xlim[0]
+        h = ylim[1]-ylim[0]
 
         if not showframe:
             ax.axes.get_xaxis().set_visible(False)
@@ -243,8 +240,7 @@ Other:
 
         # Grow the figure size so that elements are always the same
         # Do after show() because it messes with size.
-        if autoscale:
-            ax.get_figure().set_size_inches(self.inches_per_unit*w, self.inches_per_unit*h)
+        ax.get_figure().set_size_inches(self.inches_per_unit*w, self.inches_per_unit*h)
 
     def save(self, fname, transparent=True, dpi=72):
         """ Save figure to file.
@@ -367,9 +363,10 @@ Labels [Default = no label]:
 
 Other:
     move_cur : move the cursor after drawing. Default=True.
-    color    : matplotlib color for element. e.g. 'red', '#34a4e6', (.8,0,.8)
+    color    : matplotlib color for element lines. e.g. 'red', '#34a4e6', (.8,0,.8)
     ls       : line style. same as matplotlib: ['-', ':', '--']
     lw       : line width. same as matplotlib. Default=1
+    fill     : matplotlib color for fill
     """
         # Flatten element def with base elements
         self.defn = elm_def.copy()
@@ -382,6 +379,7 @@ Other:
         self.color = kwargs.get('color', self.defn.get('color', drawing.color))
         self.ls = kwargs.get('ls', self.defn.get('ls', '-'))
         self.lw = kwargs.get('lw', self.defn.get('lw', drawing.lw))
+        self.fill = kwargs.get('fill', None)
         totlen = kwargs.get('l', drawing.unit)
 
         # Determine theta angle of element
@@ -490,12 +488,15 @@ Other:
             botlabel = kwargs.get('botlabel', None)
             rgtlabel = kwargs.get('rgtlabel', None)
             lftlabel = kwargs.get('lftlabel', None)
+            size = kwargs.get('lblsize', drawing.fontsize)
+            clabel = kwargs.get('clabel', None)
             self.lbl_ofst = kwargs.get('lblofst', self.defn.get('lblofst', drawing.txtofst))
-            if label is not None:    self.add_label(label, dfltlbl,  ofst=self.lbl_ofst, size=drawing.fontsize)
-            if toplabel is not None: self.add_label(toplabel, 'top', ofst=self.lbl_ofst, size=drawing.fontsize)
-            if botlabel is not None: self.add_label(botlabel, 'bot', ofst=self.lbl_ofst, size=drawing.fontsize)
-            if rgtlabel is not None: self.add_label(rgtlabel, 'rgt', ofst=self.lbl_ofst, size=drawing.fontsize)
-            if lftlabel is not None: self.add_label(lftlabel, 'lft', ofst=self.lbl_ofst, size=drawing.fontsize)
+            if label is not None:    self.add_label(label, dfltlbl,  ofst=self.lbl_ofst, size=size)
+            if toplabel is not None: self.add_label(toplabel, 'top', ofst=self.lbl_ofst, size=size)
+            if botlabel is not None: self.add_label(botlabel, 'bot', ofst=self.lbl_ofst, size=size)
+            if rgtlabel is not None: self.add_label(rgtlabel, 'rgt', ofst=self.lbl_ofst, size=size)
+            if lftlabel is not None: self.add_label(lftlabel, 'lft', ofst=self.lbl_ofst, size=size)
+            if clabel is not None: self.add_label(clabel, 'center', ofst=[0,0], size=size)
 
         txtlist = self.defn.get('labels', [])
         for txtlbl in txtlist:
@@ -609,7 +610,6 @@ Other:
         if align is None:   # Determine best alignment for label based on angle
             th = self.theta
             # Below alignment divisions work for label on top. Rotate angle for other sides.
-
             if loc == 'lft':
                 th = th + 90
             elif loc == 'bot':
@@ -618,7 +618,9 @@ Other:
                 th = th + 270
             th = th % 360  # Normalize angle so it's positive, clockwise
 
-            if th < 22.5:         # 0 to +22 deg
+            if loc == 'center':
+                align = ('center', 'center')
+            elif th < 22.5:         # 0 to +22 deg
                 align = ('center', 'bottom')
             elif th < 22.5+45:    #22 to 67
                 align = ('right', 'bottom')
@@ -716,28 +718,37 @@ Other:
             ax        : matplotlib axis
             showframe : Draw the axis frame. Useful for debugging.
         """
+        if self.fill:
+            for i in range(len(self.paths)):
+                tlist = [(x,y) for x, y in self.paths[i]]  # Need tuples for set hashing
+                if len(tlist) != len(set(tlist)):  # duplicate points, assume closed shape
+                    ax.fill(*list(zip(*self.paths[i])), color=self.fill, zorder=0)
+        
         for path in self.paths:
             ax.plot(path[:, 0], path[:, 1], color=self.color, lw=self.lw,
                     solid_capstyle='round', ls=self.ls)
 
         for s in self.shapes:
+            if s.get('fill', False):
+                fill = True
+                fillcolor = s.get('fillcolor', self.color)
+            else:
+                fill = self.fill is not None
+                fillcolor = self.fill
+            
             if s.get('shape') == 'circle':
                 xy = np.array(s.get('center', [0, 0]))
                 xy = self.translate(xy - self.ofst)
                 rad = s.get('radius', 1) * self.z
-                fill = s.get('fill', False)
-                fillcolor = s.get('fillcolor', self.color)
                 circ = plt.Circle(xy=xy, radius=rad, ec=self.color,
-                                  fc=fillcolor, fill=fill, zorder=3, lw=self.lw)
+                                  fc=fillcolor, fill=fill, zorder=0, lw=self.lw)
                 ax.add_patch(circ)
             elif s.get('shape') == 'poly':
                 xy = np.array(s.get('xy', [[0, 0]]))
                 xy = self.translate(xy - self.ofst)
                 closed = s.get('closed', True)
-                fill = s.get('fill', False)
-                fillcolor = s.get('fillcolor', self.color)
                 poly = plt.Polygon(xy=xy, closed=closed, ec=self.color,
-                                   fc=fillcolor, fill=fill, zorder=3, lw=self.lw)
+                                   fc=fillcolor, fill=fill, zorder=0, lw=self.lw)
                 ax.add_patch(poly)
             elif s.get('shape') == 'arc':
                 xy = np.array(s.get('center', [0, 0]))
@@ -747,7 +758,7 @@ Other:
                 h = s.get('height', 1) * self.z
                 th1 = s.get('theta1', 35)
                 th2 = s.get('theta2', -35)
-                if self.reverse: th1, th2 = th2, th1
+                if self.reverse: th1, th2 = th1+180, th2+180
 
                 angle = s.get('angle', self.theta)
                 arc = Arc(xy, width=w, height=h, theta1=th1,
@@ -757,7 +768,14 @@ Other:
                 # Add an arrowhead to the arc
                 arrow = s.get('arrow', None)  # 'cw' or 'ccw' or None
                 if arrow is not None:
+                    # Apply stretch to theta to match MPL's arc
+                    # (See change https://github.com/matplotlib/matplotlib/pull/8047/files)
+                    x, y = np.cos(np.deg2rad(th2)), np.sin(np.deg2rad(th2))
+                    th2 = np.rad2deg(np.arctan2((w/h)*y, x))
+                    x, y = np.cos(np.deg2rad(th1)), np.sin(np.deg2rad(th1))
+                    th1 = np.rad2deg(np.arctan2((w/h)*y, x))
                     if arrow == 'ccw':
+                        
                         dx = np.cos(np.deg2rad(th2+90)) / 100
                         dy = np.sin(np.deg2rad(th2+90)) / 100
                         s = [xy[0] + w/2*np.cos(np.deg2rad(th2)),
